@@ -1,113 +1,92 @@
-import { Component, createRef } from 'react';
+import { useState, useEffect } from 'react';
+
 import Container from './Container/Container';
 import SearchBar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
-import fetchImages from '../services/Api';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
 import Modal from './Modal/Modal';
+
+import fetchImages from '../services/Api';
 import { errorInfo, infoCorrectRequest } from 'services/report';
 
-class App extends Component {
-  state = {
-    data: [],
-    searchImagesName: '',
-    numPage: null,
-    perPage: 12,
-    totalPages: null,
-    isLoading: false,
+export default function App() {
+  const perPage = 12;
+
+  const [data, setData] = useState([]);
+  const [searchImagesName, setSearchImagesName] = useState('');
+  const [numPage, setNumPage] = useState(null);
+  const [totalPages, setTotalPages] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [modal, setModal] = useState({
     isShowModal: false,
     dataModalImg: null,
-    errorMessage: null,
-  };
+  });
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { searchImagesName, numPage, perPage } = this.state;
-    if (
-      prevState.searchImagesName !== searchImagesName ||
-      prevState.numPage !== numPage
-    ) {
+  useEffect(() => {
+    if (!searchImagesName || !numPage) return;
+    async function fetchImageRequest() {
       try {
-        this.setState({ isLoading: true });
+        setIsLoading(true);
         const dataImages = await fetchImages(
           searchImagesName,
           numPage,
           perPage
         );
         const allPages = Math.ceil(dataImages.totalHits / perPage);
-        this.setState(prevState => ({
-          data:
-            numPage === 1
-              ? dataImages.hits
-              : [...prevState.data, ...dataImages.hits],
-          totalPages: allPages,
-        }));
+        setTotalPages(allPages);
+        setData(
+          numPage === 1 ? dataImages.hits : [...data, ...dataImages.hits]
+        );
         numPage === 1 && infoCorrectRequest(dataImages.totalHits);
       } catch (error) {
-        this.setState({ errorMessage: error.response.data });
+        setErrorMessage(error.response.data);
         errorInfo(error);
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }
     }
-  }
+    fetchImageRequest();
+  }, [searchImagesName, numPage]);
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ numPage: prevState.numPage + 1 }));
+  const handleLoadMore = () => {
+    setNumPage(numPage + 1);
   };
 
-  handleSubmit = searchValue => {
-    this.setState({
-      searchImagesName: searchValue,
-      numPage: 1,
-    });
+  const handleSubmit = searchValue => {
+    setSearchImagesName(searchValue);
+    setNumPage(1);
   };
 
-  toggleModal = dataModal => {
-    if (this.state.isShowModal) {
-      this.setState(prevState => ({
-        isShowModal: !prevState.isShowModal,
+  const toggleModal = dataModal => {
+    if (modal.isShowModal) {
+      setModal({
+        isShowModal: !modal.isShowModal,
         dataModalImg: null,
-      }));
+      });
     } else {
-      this.setState(prevState => ({
-        isShowModal: !prevState.isShowModal,
+      setModal({
+        isShowModal: !modal.isShowModal,
         dataModalImg: dataModal,
-      }));
+      });
     }
   };
 
-  render() {
-    const {
-      data,
-      numPage,
-      totalPages,
-      isLoading,
-      errorMessage,
-      isShowModal,
-      dataModalImg,
-    } = this.state;
-
-    return (
-      <Container>
-        <SearchBar handleSubmit={this.handleSubmit} />
-        {isLoading && <Loader />}
-        {errorMessage && <>Ooops... {errorMessage}</>}
-        {data.length > 0 && (
-          <ImageGallery images={data} toggleModal={this.toggleModal} />
-        )}
-        {data.length > 0 && totalPages !== numPage && (
-          <Button handleLoadMore={this.handleLoadMore} />
-        )}
-        {isShowModal && (
-          <Modal
-            dataModalImg={dataModalImg}
-            toggleModal={this.toggleModal}
-          ></Modal>
-        )}
-      </Container>
-    );
-  }
+  return (
+    <Container>
+      <SearchBar handleSubmit={handleSubmit} />
+      {isLoading && <Loader />}
+      {errorMessage && <>Ooops... {errorMessage}</>}
+      {data.length > 0 && (
+        <ImageGallery images={data} toggleModal={toggleModal} />
+      )}
+      {data.length > 0 && totalPages !== numPage && (
+        <Button handleLoadMore={handleLoadMore} />
+      )}
+      {modal.isShowModal && (
+        <Modal dataImg={modal.dataModalImg} toggleModal={toggleModal}></Modal>
+      )}
+    </Container>
+  );
 }
-
-export default App;
