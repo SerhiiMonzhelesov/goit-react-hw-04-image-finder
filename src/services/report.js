@@ -16,11 +16,26 @@ function infoCorrectRequest(totalHits) {
     position: 'center-center',
     width: '500px',
     fontSize: '30px',
-    timeout: '1700',
+    timeout: '1200',
     backOverlayColor: (0, 0, 0, 0.7),
     useIcon: false,
     background: 'black',
   });
 }
 
-export { errorInfo, infoCorrectRequest };
+function infoEmptyRequest() {
+  Report.info(
+    'SORRY',
+    '"There are no images matching your search query. <br/><br/>Please try again"',
+    'OK',
+    {
+      width: '450px',
+      messageFontSize: '24px',
+      titleFontSize: '32px',
+      svgSize: '70px',
+      backOverlayClickToClose: true,
+    }
+  );
+}
+
+export { errorInfo, infoCorrectRequest, infoEmptyRequest };

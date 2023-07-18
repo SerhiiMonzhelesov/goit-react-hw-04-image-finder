@@ -8,7 +8,11 @@ import Button from './Button/Button';
 import Modal from './Modal/Modal';
 
 import fetchImages from '../services/Api';
-import { errorInfo, infoCorrectRequest } from 'services/report';
+import {
+  errorInfo,
+  infoCorrectRequest,
+  infoEmptyRequest,
+} from 'services/report';
 
 export default function App() {
   const perPage = 12;
@@ -39,7 +43,10 @@ export default function App() {
         setData(prevState =>
           numPage === 1 ? dataImages.hits : [...prevState, ...dataImages.hits]
         );
-        numPage === 1 && infoCorrectRequest(dataImages.totalHits);
+        numPage === 1 &&
+          dataImages.hits.length &&
+          infoCorrectRequest(dataImages.totalHits);
+        !dataImages.hits.length && infoEmptyRequest();
       } catch (error) {
         setErrorMessage(error.response.data);
         errorInfo(error);
@@ -60,17 +67,17 @@ export default function App() {
   };
 
   const toggleModal = dataModal => {
-    if (modal.isShowModal) {
-      setModal({
-        isShowModal: !modal.isShowModal,
-        dataModalImg: null,
-      });
-    } else {
-      setModal({
-        isShowModal: !modal.isShowModal,
-        dataModalImg: dataModal,
-      });
-    }
+    setModal(() => {
+      return modal.isShowModal
+        ? {
+            isShowModal: !modal.isShowModal,
+            dataModalImg: null,
+          }
+        : {
+            isShowModal: !modal.isShowModal,
+            dataModalImg: dataModal,
+          };
+    });
   };
 
   return (
