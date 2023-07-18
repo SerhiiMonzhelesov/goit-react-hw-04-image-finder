@@ -6,6 +6,7 @@ import fetchImages from '../services/Api';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
 import Modal from './Modal/Modal';
+import { errorInfo, infoCorrectRequest } from 'services/report';
 
 class App extends Component {
   state = {
@@ -19,8 +20,6 @@ class App extends Component {
     dataModalImg: null,
     errorMessage: null,
   };
-
-  loadMoreRef = createRef();
 
   async componentDidUpdate(prevProps, prevState) {
     const { searchImagesName, numPage, perPage } = this.state;
@@ -43,18 +42,13 @@ class App extends Component {
               : [...prevState.data, ...dataImages.hits],
           totalPages: allPages,
         }));
+        numPage === 1 && infoCorrectRequest(dataImages.totalHits);
       } catch (error) {
         this.setState({ errorMessage: error.response.data });
+        errorInfo(error);
       } finally {
         this.setState({ isLoading: false });
       }
-    }
-    if (
-      prevState.data !== this.state.data &&
-      numPage !== 1 &&
-      numPage !== this.state.totalPages
-    ) {
-      this.loadMoreRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }
 
@@ -103,7 +97,7 @@ class App extends Component {
           <ImageGallery images={data} toggleModal={this.toggleModal} />
         )}
         {data.length > 0 && totalPages !== numPage && (
-          <Button handleLoadMore={this.handleLoadMore} ref={this.loadMoreRef} />
+          <Button handleLoadMore={this.handleLoadMore} />
         )}
         {isShowModal && (
           <Modal
