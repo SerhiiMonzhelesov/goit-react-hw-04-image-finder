@@ -36,8 +36,8 @@ export default function App() {
         );
         const allPages = Math.ceil(dataImages.totalHits / perPage);
         setTotalPages(allPages);
-        setData(
-          numPage === 1 ? dataImages.hits : [...data, ...dataImages.hits]
+        setData(prevState =>
+          numPage === 1 ? dataImages.hits : [...prevState, ...dataImages.hits]
         );
         numPage === 1 && infoCorrectRequest(dataImages.totalHits);
       } catch (error) {
