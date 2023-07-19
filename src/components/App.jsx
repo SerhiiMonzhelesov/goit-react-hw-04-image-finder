@@ -58,7 +58,7 @@ export default function App() {
   }, [searchImagesName, numPage]);
 
   const handleLoadMore = () => {
-    setNumPage(numPage + 1);
+    setNumPage(prevState => prevState + 1);
   };
 
   const handleSubmit = searchValue => {
@@ -67,16 +67,13 @@ export default function App() {
   };
 
   const toggleModal = dataModal => {
-    setModal(() => {
-      return modal.isShowModal
-        ? {
-            isShowModal: !modal.isShowModal,
-            dataModalImg: null,
-          }
-        : {
-            isShowModal: !modal.isShowModal,
-            dataModalImg: dataModal,
-          };
+    setModal(prevState => {
+      return (
+        prevState && {
+          isShowModal: !modal.isShowModal,
+          dataModalImg: dataModal || null,
+        }
+      );
     });
   };
 
