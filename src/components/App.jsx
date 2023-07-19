@@ -67,13 +67,9 @@ export default function App() {
   };
 
   const toggleModal = dataModal => {
-    setModal(prevState => {
-      return (
-        prevState && {
-          isShowModal: !modal.isShowModal,
-          dataModalImg: dataModal || null,
-        }
-      );
+    setModal({
+      isShowModal: !modal.isShowModal,
+      dataModalImg: dataModal || null,
     });
   };
 
